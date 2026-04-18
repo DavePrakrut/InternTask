@@ -1252,6 +1252,14 @@
             message = String(data.detail);
           }
         }
+
+        const isProtectedRoute = path !== "/login" && path !== "/register";
+        if (response.status === 401 && token && isProtectedRoute) {
+          clearToken();
+          showLoginPage();
+          throw new Error("Session expired. Please log in again.");
+        }
+
         throw new Error(message);
       }
 
