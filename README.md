@@ -176,8 +176,8 @@ Replace with your deployed URL:
 	  - Preferred: Render Postgres URL
 6. Deploy and wait for the service to become healthy.
 7. Verify hosted app:
-	- `<your-live-url>/`
-	- `<your-live-url>/docs`
+	- `https://interntask-2i4l.onrender.com/`
+	- `<https://interntask-2i4l.onrender.com/docs`
 8. Run this functional check on the live app:
 	- Register user
 	- Login
