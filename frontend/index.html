@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Manager</title>
+  <style>
+    :root {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --surface-soft: #f9fafc;
+      --surface-muted: #eef2f7;
+      --border: #e3e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #155eef;
+      --primary-dark: #0f4ed8;
+      --success-soft: #dcfce7;
+      --warning-soft: #fef3c7;
+      --success: #166534;
+      --warning: #92400e;
+      --danger: #dc2626;
+      --danger-dark: #b91c1c;
+      --shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+      --shadow-soft: 0 10px 22px rgba(15, 23, 42, 0.05);
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --main-bg: #f6f7fb;
+      --sidebar-bg: #eef1f6;
+      --surface-inset: #f8fafc;
+      --focus-ring: rgba(21, 94, 239, 0.11);
+      --sidebar-text: #334155;
+      --label-text: #475569;
+      --body-soft: #334155;
+    }
+
+    body[data-theme="dark"] {
+      --bg: #0b1220;
+      --surface: #111b2e;
+      --surface-soft: #17233b;
+      --surface-muted: #1f2d48;
+      --border: #2c3a54;
+      --text: #e2e8f0;
+      --muted: #9fb0ca;
+      --main-bg: #0d1628;
+      --sidebar-bg: #0f1b31;
+      --surface-inset: #16253d;
+      --focus-ring: rgba(96, 165, 250, 0.22);
+      --sidebar-text: #c6d3ea;
+      --label-text: #9fb0ca;
+      --body-soft: #c6d3ea;
+      --shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+      --shadow-soft: 0 10px 22px rgba(0, 0, 0, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px 20px;
+    }
+
+    .auth-wrap {
+      width: min(100%, 520px);
+      text-align: center;
+      transform: translateY(-18px);
+    }
+
+    .auth-brand {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #334155;
+      font-weight: 800;
+    }
+
+    .auth-subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    .auth-card {
+      width: min(100%, 520px);
+      margin: 28px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+      padding: 30px 32px 28px;
+      text-align: left;
+    }
+
+    .auth-card h2 {
+      margin: 0;
+      font-size: 1.3rem;
+      letter-spacing: -0.03em;
+    }
+
+    .welcome-title {
+      margin: 0;
+      font-size: 1.28rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+
+    .welcome-copy {
+      margin-top: 4px;
+    }
+
+    .auth-card p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.5;
+    }
+
+    .form {
+      margin-top: 24px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .form .btn {
+      width: 100%;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      font-size: 0.8rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--label-text);
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 15px 16px;
+      font: inherit;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #94a3b8;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: rgba(21, 94, 239, 0.55);
+      box-shadow: 0 0 0 4px var(--focus-ring);
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 6px;
+      padding: 14px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.92;
+      transform: none;
+    }
+
+    .btn.is-loading {
+      gap: 10px;
+    }
+
+    .btn-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      border-radius: 999px;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      box-shadow: 0 14px 28px rgba(21, 94, 239, 0.2);
+    }
+
+    .btn-ghost {
+      background: #eef4ff;
+      color: #0f4ed8;
+      border: 1px solid rgba(21, 94, 239, 0.12);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+      color: #fff;
+      box-shadow: 0 10px 18px rgba(220, 38, 38, 0.15);
+    }
+
+    .small-link {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.93rem;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .small-link button {
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--primary);
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .error {
+      min-height: 20px;
+      color: #b91c1c;
+      font-size: 0.88rem;
+      margin-top: 2px;
+    }
+
+    .password-strength {
+      margin-top: 8px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .password-strength-label {
+      margin: 0;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .strength-track {
+      width: 100%;
+      height: 10px;
+      border-radius: 4px;
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      width: 0%;
+      background: #dc2626;
+      transition: width 0.2s ease, background-color 0.2s ease;
+    }
+
+    .strength-text {
+      margin: 0;
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    /* dashboard */
+    .dashboard {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      background: var(--main-bg);
+    }
+
+    .sidebar {
+      background: var(--sidebar-bg);
+      border-right: 1px solid rgba(148, 163, 184, 0.18);
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 4px 14px;
+    }
+
+    .sidebar-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #2f80ed, #155eef);
+      color: #fff;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    .sidebar-brand h1 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+
+    .sidebar-brand p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .sidebar-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 12px 14px;
+      background: transparent;
+      color: var(--sidebar-text);
+      text-align: left;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .nav-btn.active,
+    .nav-btn:hover {
+      background: var(--surface);
+      border-color: rgba(148, 163, 184, 0.2);
+    }
+
+    .sidebar-spacer {
+      flex: 1;
+    }
+
+    .sidebar-foot {
+      display: grid;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: var(--label-text);
+    }
+
+    .main {
+      padding: 24px;
+    }
+
+    .main-shell {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .header-copy h2 {
+      margin: 0;
+      font-size: clamp(2rem, 3vw, 2.8rem);
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+    }
+
+    .header-copy p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 54ch;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-card {
+      border-radius: 6px;
+      background: var(--surface);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      padding: 18px;
+      box-shadow: var(--shadow-soft);
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .summary-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(21, 94, 239, 0.28);
+    }
+
+    .summary-card span {
+      font-size: 0.77rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .summary-card strong {
+      font-size: 2rem;
+      line-height: 1;
+      margin-top: 10px;
+      letter-spacing: -0.03em;
+    }
+
+    .summary-card.blue {
+      background: linear-gradient(135deg, #155eef, #0f4ed8);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .summary-card.blue span,
+    .summary-card.blue p {
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .summary-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .quick-add {
+      background: var(--surface);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 6px;
+      padding: 18px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .quick-add input {
+      border-radius: 6px;
+      background: var(--surface-inset);
+    }
+
+    .task-section {
+      background: var(--surface);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 6px;
+      padding: 18px;
+      box-shadow: var(--shadow-soft);
+    }
+    
+
+    .section-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.92rem;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .filter-btn {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--sidebar-text);
+      padding: 9px 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .filter-btn.active {
+      background: #eff6ff;
+      border-color: rgba(21, 94, 239, 0.18);
+      color: #0f4ed8;
+    }
+
+    .task-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .task-item {
+      background: var(--surface);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 6px;
+      padding: 16px;
+    }
+
+    .task-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .task-title {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .task-desc {
+      margin: 0 0 12px;
+      color: var(--body-soft);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 11px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.pending {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .badge.completed {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .task-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .task-actions .btn {
+      padding: 9px 13px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+    }
+
+    .view-panel {
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel-card {
+      background: var(--surface);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 6px;
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .mytasks-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+      gap: 16px;
+    }
+
+    .completed-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-tile {
+      background: var(--surface);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 6px;
+      padding: 16px;
+      min-height: 120px;
+      display: grid;
+      align-content: space-between;
+      gap: 10px;
+    }
+
+    .stat-tile h4 {
+      margin: 0;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .stat-tile strong {
+      font-size: 2rem;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .stat-tile p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .stat-tile.blue {
+      background: #155eef;
+      border-color: #155eef;
+      color: #fff;
+    }
+
+    .stat-tile.blue h4,
+    .stat-tile.blue p {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .list-error {
+      margin-top: 0;
+      min-height: 0;
+    }
+
+    .empty {
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--muted);
+      text-align: center;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .theme-card {
+      max-width: 560px;
+    }
+
+    .theme-options {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .theme-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .theme-btn.active {
+      background: #155eef;
+      border-color: #155eef;
+      color: #fff;
+    }
+
+    @media (max-width: 960px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .mytasks-layout,
+      .completed-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding: 14px;
+      }
+
+      .auth-card {
+        padding: 20px;
+      }
+
+      .main {
+        padding: 14px;
+      }
+
+      .header-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .task-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section id="authView" class="page">
+    <div class="auth-wrap">
+      <div class="auth-brand">Task Manager</div>
+      <p class="auth-subtitle">Streamlined task tracking with a simple login-first flow.</p>
+
+      <div class="auth-card">
+        <p class="welcome-title">Welcome back</p>
+        <p class="welcome-copy">Please enter your details to sign in.</p>
+
+        <form id="loginForm" class="form">
+          <div class="field">
+            <label for="loginUsername">Username or email</label>
+            <input id="loginUsername" type="text" placeholder="yourname or you@example.com" autocomplete="username" required />
+          </div>
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" placeholder="Your password" autocomplete="current-password" required />
+          </div>
+          <button class="btn btn-primary" type="submit">Sign in</button>
+          <div id="loginError" class="error"></div>
+        </form>
+      </div>
+
+      <div class="small-link">
+        If you do not have an account, <button id="showRegisterBtn" type="button">register</button>.
+      </div>
+    </div>
+  </section>
+
+  <section id="registerView" class="page hidden">
+    <div class="auth-wrap">
+      <div class="auth-brand">Task Manager</div>
+      <p class="auth-subtitle">Create an account, then sign in to access your tasks.</p>
+
+      <div class="auth-card">
+        <p class="welcome-title">Create account</p>
+        <p class="welcome-copy">Set up your account in a few seconds.</p>
+
+        <form id="registerForm" class="form">
+          <div class="field">
+            <label for="regUsername">Username</label>
+            <input id="regUsername" type="text" placeholder="yourname" autocomplete="username" required />
+          </div>
+          <div class="field">
+            <label for="regEmail">Email</label>
+            <input id="regEmail" type="email" placeholder="you@example.com" autocomplete="email" required />
+          </div>
+          <div class="field">
+            <label for="regPassword">Password</label>
+            <input id="regPassword" type="password" placeholder="Create a password" autocomplete="new-password" required />
+            <div class="password-strength" aria-live="polite">
+              <p class="password-strength-label">Password strength</p>
+              <div class="strength-track">
+                <div id="passwordStrengthFill" class="strength-fill"></div>
+              </div>
+              <p id="passwordStrengthText" class="strength-text">Use at least 8 chars, 1 uppercase, 1 number, and 1 symbol.</p>
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit">Create account</button>
+          <div id="registerError" class="error"></div>
+        </form>
+      </div>
+
+      <div class="small-link">
+        Already have an account? <button id="showLoginBtn" type="button">log in</button>.
+      </div>
+    </div>
+  </section>
+
+  <section id="tasksView" class="dashboard hidden">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div>
+          <h1>Task Manager</h1>
+          <p>Workspace</p>
+        </div>
+      </div>
+
+      <div class="sidebar-actions">
+        <button class="nav-btn active" type="button" data-view="dashboard">Dashboard</button>
+        <button class="nav-btn" type="button" data-view="overview">Overview</button>
+        <button class="nav-btn" type="button" data-view="my-tasks">Pending Tasks</button>
+        <button class="nav-btn" type="button" data-view="completed">Completed</button>
+        <button class="nav-btn" type="button" data-view="settings">Settings</button>
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-foot">
+        <div>Logged in as your personal account.</div>
+        <button id="logoutBtn" class="btn btn-danger" type="button">Logout</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="main-shell">
+        <section id="dashboardPanel" class="view-panel">
+          <div class="header-row">
+            <div class="header-copy">
+              <h2>Morning, ready to work?</h2>
+              <p>Use the quick summary, add a task, and keep the list short and focused.</p>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-card" data-goto-view="my-tasks">
+              <span>Total tasks</span>
+              <strong id="totalCount">0</strong>
+              <p>All tasks in your account.</p>
+            </div>
+            <div class="summary-card blue" data-goto-view="my-tasks">
+              <span>Pending</span>
+              <strong id="pendingCount">0</strong>
+              <p>Items still waiting.</p>
+            </div>
+            <div class="summary-card" data-goto-view="completed">
+              <span>Completed</span>
+              <strong id="completedCount">0</strong>
+              <p>Tasks already finished.</p>
+            </div>
+          </div>
+
+          <form id="taskForm" class="quick-add">
+            <div class="section-head">
+              <div>
+                <h3>Add a new task</h3>
+                <p>Quickly capture what you need to do next.</p>
+              </div>
+            </div>
+
+            <div class="field" style="margin-bottom: 12px;">
+              <label for="taskTitle">Title</label>
+              <input id="taskTitle" type="text" placeholder="Finish project report" required />
+            </div>
+            <div class="field" style="margin-bottom: 12px;">
+              <label for="taskDescription">Description <span class="helper">optional</span></label>
+              <textarea id="taskDescription" placeholder="Add notes or next steps..."></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit">Add task</button>
+            <div id="taskError" class="error"></div>
+          </form>
+        </section>
+
+        <section id="overviewPanel" class="view-panel hidden">
+          <div class="header-row">
+            <div class="header-copy">
+              <h2>Overview</h2>
+              <p>Recent tasks across your workspace.</p>
+            </div>
+          </div>
+
+          <section class="task-section">
+            <div class="section-head">
+              <div>
+                <h3>Overview</h3>
+                <p>Recent tasks across your workspace.</p>
+              </div>
+            </div>
+
+            <div id="dashboardListError" class="error list-error"></div>
+            <div id="dashboardTaskList" class="task-list"></div>
+            <div id="dashboardEmptyState" class="empty hidden">No tasks yet. Add your first task above.</div>
+          </section>
+        </section>
+
+        <section id="myTasksPanel" class="view-panel hidden">
+          <div class="header-row">
+            <div class="header-copy">
+              <h2>Pending Tasks</h2>
+              <p>Focus on pending work and complete items one by one.</p>
+            </div>
+          </div>
+
+          <div class="mytasks-layout">
+            <section class="task-section">
+              <div class="section-head">
+                <div>
+                  <h3>Pending list</h3>
+                  <p>Only tasks that still need action.</p>
+                </div>
+              </div>
+              <div id="myTasksListError" class="error list-error"></div>
+              <div id="myTasksList" class="task-list"></div>
+              <div id="myTasksEmptyState" class="empty hidden">No pending tasks right now.</div>
+            </section>
+
+            <aside class="panel-card">
+              <h3 style="margin-top: 0;">Focus Panel</h3>
+              <p style="margin-top: 6px; color: var(--muted);">Keep this count close to zero.</p>
+              <div class="stat-tile" style="margin-top: 14px; min-height: 0;">
+                <h4>Pending Items</h4>
+                <strong id="myPendingCount">0</strong>
+                <p>Tasks waiting for completion.</p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="completedPanel" class="view-panel hidden">
+          <div class="header-row">
+            <div class="header-copy">
+              <h2>Completed</h2>
+              <p>Review finished work and track your delivery pace.</p>
+            </div>
+          </div>
+
+          <section class="task-section">
+            <div class="section-head">
+              <div>
+                <h3>Finished tasks</h3>
+                <p>Completed items are listed here.</p>
+              </div>
+            </div>
+            <div id="completedListError" class="error list-error"></div>
+            <div id="completedTaskList" class="task-list"></div>
+            <div id="completedEmptyState" class="empty hidden">No completed tasks yet.</div>
+          </section>
+
+          <div class="completed-stats">
+            <article class="stat-tile">
+              <h4>Completed / Total</h4>
+              <strong id="completedTotalBig">0</strong>
+              <p>Finished tasks out of all tasks.</p>
+            </article>
+            <article class="stat-tile">
+              <h4>Completion Rate</h4>
+              <strong id="completionRate">0%</strong>
+              <p>Completed out of all tasks.</p>
+            </article>
+            <article class="stat-tile blue">
+              <h4>Productivity Tip</h4>
+              <strong style="font-size: 1.15rem; line-height: 1.3;">Ship one task fully before starting a new one.</strong>
+              <p>Consistency beats bursts.</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="settingsPanel" class="view-panel hidden">
+          <div class="header-row">
+            <div class="header-copy">
+              <h2>Settings</h2>
+              <p>Customize your app experience.</p>
+            </div>
+          </div>
+
+          <section class="task-section theme-card">
+            <div class="section-head">
+              <div>
+                <h3>Theme</h3>
+                <p>Switch between light and dark mode.</p>
+              </div>
+            </div>
+
+            <div class="theme-options">
+              <button id="themeLightBtn" class="theme-btn" type="button" data-theme="light">Light</button>
+              <button id="themeDarkBtn" class="theme-btn" type="button" data-theme="dark">Dark</button>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+  </section>
+
+  <script>
+    const API =
+      window.location.origin && window.location.origin.startsWith("http")
+        ? window.location.origin
+        : "http://localhost:8000";
+    const TOKEN_KEY = "token";
+    const THEME_KEY = "theme";
+
+    const authView = document.getElementById("authView");
+    const registerView = document.getElementById("registerView");
+    const tasksView = document.getElementById("tasksView");
+
+    const showRegisterBtn = document.getElementById("showRegisterBtn");
+    const showLoginBtn = document.getElementById("showLoginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const registerForm = document.getElementById("registerForm");
+    const loginForm = document.getElementById("loginForm");
+    const taskForm = document.getElementById("taskForm");
+    const loginSubmitBtn = loginForm.querySelector('button[type="submit"]');
+    const regPasswordInput = document.getElementById("regPassword");
+    const passwordStrengthFill = document.getElementById("passwordStrengthFill");
+    const passwordStrengthText = document.getElementById("passwordStrengthText");
+
+    const registerError = document.getElementById("registerError");
+    const loginError = document.getElementById("loginError");
+    const taskError = document.getElementById("taskError");
+    const dashboardListError = document.getElementById("dashboardListError");
+    const myTasksListError = document.getElementById("myTasksListError");
+    const completedListError = document.getElementById("completedListError");
+
+    const dashboardTaskList = document.getElementById("dashboardTaskList");
+    const myTasksList = document.getElementById("myTasksList");
+    const completedTaskList = document.getElementById("completedTaskList");
+    const dashboardEmptyState = document.getElementById("dashboardEmptyState");
+    const myTasksEmptyState = document.getElementById("myTasksEmptyState");
+    const completedEmptyState = document.getElementById("completedEmptyState");
+    const totalCount = document.getElementById("totalCount");
+    const pendingCount = document.getElementById("pendingCount");
+    const completedCount = document.getElementById("completedCount");
+    const myPendingCount = document.getElementById("myPendingCount");
+    const completedTotalBig = document.getElementById("completedTotalBig");
+    const completionRate = document.getElementById("completionRate");
+    const navButtons = document.querySelectorAll(".nav-btn[data-view]");
+    const summaryCards = document.querySelectorAll(".summary-card[data-goto-view]");
+    const dashboardPanel = document.getElementById("dashboardPanel");
+    const overviewPanel = document.getElementById("overviewPanel");
+    const myTasksPanel = document.getElementById("myTasksPanel");
+    const completedPanel = document.getElementById("completedPanel");
+    const settingsPanel = document.getElementById("settingsPanel");
+    const themeButtons = document.querySelectorAll(".theme-btn[data-theme]");
+
+    let activeView = "dashboard";
+
+    function setActiveNav(view) {
+      navButtons.forEach((button) => {
+        button.classList.toggle("active", button.getAttribute("data-view") === view);
+      });
+    }
+
+    function setActiveView(view) {
+      activeView = view;
+      dashboardPanel.classList.toggle("hidden", view !== "dashboard");
+      overviewPanel.classList.toggle("hidden", view !== "overview");
+      myTasksPanel.classList.toggle("hidden", view !== "my-tasks");
+      completedPanel.classList.toggle("hidden", view !== "completed");
+      settingsPanel.classList.toggle("hidden", view !== "settings");
+      setActiveNav(view);
+    }
+
+    function setTheme(theme) {
+      const resolvedTheme = theme === "dark" ? "dark" : "light";
+      document.body.setAttribute("data-theme", resolvedTheme);
+      localStorage.setItem(THEME_KEY, resolvedTheme);
+      themeButtons.forEach((button) => {
+        button.classList.toggle("active", button.getAttribute("data-theme") === resolvedTheme);
+      });
+    }
+
+    function getTheme() {
+      const storedTheme = localStorage.getItem(THEME_KEY);
+      if (storedTheme === "dark" || storedTheme === "light") {
+        return storedTheme;
+      }
+      return "light";
+    }
+
+    function setListErrors(message) {
+      setError(dashboardListError, message);
+      setError(myTasksListError, message);
+      setError(completedListError, message);
+    }
+
+    function setError(el, message) {
+      el.textContent = message || "";
+    }
+
+    function getPasswordChecks(password) {
+      return {
+        minLength: password.length >= 8,
+        hasUpper: /[A-Z]/.test(password),
+        hasNumber: /\d/.test(password),
+        hasSymbol: /[^A-Za-z0-9]/.test(password)
+      };
+    }
+
+    function getPasswordScore(password) {
+      const checks = getPasswordChecks(password);
+      return Object.values(checks).filter(Boolean).length;
+    }
+
+    function isPasswordStrong(password) {
+      return getPasswordScore(password) === 4;
+    }
+
+    function updatePasswordStrengthUI(password) {
+      const score = getPasswordScore(password);
+      const width = (score / 4) * 100;
+      passwordStrengthFill.style.width = `${width}%`;
+
+      if (!password) {
+        passwordStrengthFill.style.backgroundColor = "#dc2626";
+        passwordStrengthText.textContent = "Use at least 8 chars, 1 uppercase, 1 number, and 1 symbol.";
+        return;
+      }
+
+      if (score <= 1) {
+        passwordStrengthFill.style.backgroundColor = "#dc2626";
+        passwordStrengthText.textContent = "Weak password";
+      } else if (score === 2) {
+        passwordStrengthFill.style.backgroundColor = "#d97706";
+        passwordStrengthText.textContent = "Medium password";
+      } else if (score === 3) {
+        passwordStrengthFill.style.backgroundColor = "#65a30d";
+        passwordStrengthText.textContent = "Almost strong";
+      } else {
+        passwordStrengthFill.style.backgroundColor = "#16a34a";
+        passwordStrengthText.textContent = "Strong password";
+      }
+    }
+
+    function setLoginLoading(isLoading) {
+      if (!loginSubmitBtn) return;
+      if (isLoading) {
+        loginSubmitBtn.disabled = true;
+        loginSubmitBtn.classList.add("is-loading");
+        loginSubmitBtn.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span><span>Signing in...</span>';
+      } else {
+        loginSubmitBtn.disabled = false;
+        loginSubmitBtn.classList.remove("is-loading");
+        loginSubmitBtn.textContent = "Sign in";
+      }
+    }
+
+    function getToken() {
+      return localStorage.getItem(TOKEN_KEY);
+    }
+
+    function setToken(token) {
+      localStorage.setItem(TOKEN_KEY, token);
+    }
+
+    function clearToken() {
+      localStorage.removeItem(TOKEN_KEY);
+    }
+
+    function showLoginPage() {
+      authView.classList.remove("hidden");
+      registerView.classList.add("hidden");
+      tasksView.classList.add("hidden");
+    }
+
+    function showRegisterPage() {
+      authView.classList.add("hidden");
+      registerView.classList.remove("hidden");
+      tasksView.classList.add("hidden");
+    }
+
+    function showTasksPage() {
+      authView.classList.add("hidden");
+      registerView.classList.add("hidden");
+      tasksView.classList.remove("hidden");
+    }
+
+    async function request(path, options = {}) {
+      const token = getToken();
+      const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      };
+
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${API}${path}`, { ...options, headers });
+
+      let data = null;
+      const text = await response.text();
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = null;
+        }
+      }
+
+      if (!response.ok) {
+        let message = "Request failed";
+        if (data && data.detail) {
+          if (Array.isArray(data.detail)) {
+            message = data.detail
+              .map((item) => (item && item.msg ? item.msg : JSON.stringify(item)))
+              .join("; ");
+          } else if (typeof data.detail === "object") {
+            message = JSON.stringify(data.detail);
+          } else {
+            message = String(data.detail);
+          }
+        }
+        throw new Error(message);
+      }
+
+      return data;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function taskCard(task, options = {}) {
+      const allowComplete = options.allowComplete !== false;
+      const allowDelete = options.allowDelete !== false;
+      const statusClass = task.completed ? "completed" : "pending";
+      const statusLabel = task.completed ? "Completed" : "Pending";
+      const description = task.description ? `<p class="task-desc">${escapeHtml(task.description)}</p>` : "";
+
+      const item = document.createElement("article");
+      item.className = "task-item";
+      item.innerHTML = `
+        <div class="task-row">
+          <h3 class="task-title">${escapeHtml(task.title)}</h3>
+          <span class="badge ${statusClass}">${statusLabel}</span>
+        </div>
+        ${description}
+        <div class="task-actions">
+          ${allowComplete && !task.completed ? `<button class="btn btn-primary" data-action="complete" data-id="${task.id}">Mark complete</button>` : ""}
+          ${allowDelete ? `<button class="btn btn-ghost" data-action="delete" data-id="${task.id}">Delete</button>` : ""}
+        </div>
+      `;
+      return item;
+    }
+
+    function renderList(container, tasks, emptyEl, options = {}) {
+      container.innerHTML = "";
+      emptyEl.classList.add("hidden");
+
+      if (!tasks.length) {
+        emptyEl.classList.remove("hidden");
+        return;
+      }
+
+      const limitedTasks = options.limit ? tasks.slice(0, options.limit) : tasks;
+      limitedTasks.forEach((task) => container.appendChild(taskCard(task, options)));
+    }
+
+    function updateSummary(tasks) {
+      totalCount.textContent = String(tasks.length);
+      const completed = tasks.filter((task) => task.completed).length;
+      const pending = tasks.length - completed;
+      completedCount.textContent = String(completed);
+      pendingCount.textContent = String(pending);
+      myPendingCount.textContent = String(pending);
+      completedTotalBig.textContent = `${completed}/${tasks.length}`;
+      const rate = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
+      completionRate.textContent = `${rate}%`;
+    }
+
+    async function loadTasks() {
+      setListErrors("");
+
+      try {
+        const tasks = await request("/tasks");
+        const pendingTasks = tasks.filter((task) => !task.completed);
+        const completedTasks = tasks.filter((task) => task.completed);
+        updateSummary(tasks);
+
+        renderList(dashboardTaskList, tasks, dashboardEmptyState, { limit: 6 });
+        renderList(myTasksList, pendingTasks, myTasksEmptyState, { allowComplete: true });
+        renderList(completedTaskList, completedTasks, completedEmptyState, { allowComplete: false });
+      } catch (error) {
+        if (String(error.message).toLowerCase().includes("credentials")) {
+          clearToken();
+          showLoginPage();
+        }
+        setListErrors(error.message);
+      }
+    }
+
+    showRegisterBtn.addEventListener("click", showRegisterPage);
+    showLoginBtn.addEventListener("click", showLoginPage);
+    regPasswordInput.addEventListener("input", () => {
+      updatePasswordStrengthUI(regPasswordInput.value);
+    });
+
+    navButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        const view = button.getAttribute("data-view");
+        setActiveView(view);
+        await loadTasks();
+      });
+    });
+
+    summaryCards.forEach((card) => {
+      card.addEventListener("click", async () => {
+        const view = card.getAttribute("data-goto-view");
+        if (!view) return;
+        setActiveView(view);
+        await loadTasks();
+      });
+    });
+
+    themeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const theme = button.getAttribute("data-theme");
+        setTheme(theme);
+      });
+    });
+
+    registerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setError(registerError, "");
+
+      const email = document.getElementById("regEmail").value.trim();
+      const emailPattern = /^[^\s@]+@[^\s@]+\.com$/i;
+      if (!emailPattern.test(email)) {
+        setError(registerError, "Please enter a valid email like name@example.com");
+        return;
+      }
+
+      const password = regPasswordInput.value;
+      if (!isPasswordStrong(password)) {
+        setError(registerError, "Password must have at least 8 characters, 1 uppercase letter, 1 number, and 1 special symbol.");
+        updatePasswordStrengthUI(password);
+        return;
+      }
+
+      const payload = {
+        username: document.getElementById("regUsername").value.trim(),
+        email,
+        password
+      };
+
+      try {
+        await request("/register", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        registerForm.reset();
+        showLoginPage();
+      } catch (error) {
+        setError(registerError, error.message);
+      }
+    });
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setError(loginError, "");
+      setLoginLoading(true);
+
+      const payload = {
+        identifier: document.getElementById("loginUsername").value.trim(),
+        password: document.getElementById("loginPassword").value
+      };
+
+      try {
+        const data = await request("/login", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        setToken(data.access_token);
+        showTasksPage();
+        setActiveView("dashboard");
+        await loadTasks();
+      } catch (error) {
+        setError(loginError, error.message);
+      } finally {
+        setLoginLoading(false);
+      }
+    });
+
+    taskForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setError(taskError, "");
+
+      const payload = {
+        title: document.getElementById("taskTitle").value.trim(),
+        description: document.getElementById("taskDescription").value.trim() || null
+      };
+
+      try {
+        await request("/tasks", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        taskForm.reset();
+        await loadTasks();
+      } catch (error) {
+        setError(taskError, error.message);
+      }
+    });
+
+    tasksView.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+
+      const id = button.getAttribute("data-id");
+      const action = button.getAttribute("data-action");
+
+      try {
+        if (action === "complete") {
+          await request(`/tasks/${id}`, {
+            method: "PUT",
+            body: JSON.stringify({ completed: true })
+          });
+        }
+
+        if (action === "delete") {
+          await request(`/tasks/${id}`, {
+            method: "DELETE"
+          });
+        }
+
+        await loadTasks();
+      } catch (error) {
+        setListErrors(error.message);
+      }
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      clearToken();
+      showLoginPage();
+      dashboardTaskList.innerHTML = "";
+      myTasksList.innerHTML = "";
+      completedTaskList.innerHTML = "";
+      updateSummary([]);
+      setListErrors("");
+      setError(loginError, "");
+      setError(registerError, "");
+      setError(taskError, "");
+      setActiveView("dashboard");
+    });
+
+    (async function initialize() {
+      setTheme(getTheme());
+      updatePasswordStrengthUI(regPasswordInput.value);
+      if (!getToken()) {
+        showLoginPage();
+        return;
+      }
+
+      showTasksPage();
+      setActiveView(activeView);
+      await loadTasks();
+    })();
+  </script>
+</body>
+</html>
